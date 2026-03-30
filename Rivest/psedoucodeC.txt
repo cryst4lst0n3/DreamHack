@@ -1,0 +1,98 @@
+#include <stdio.h>
+
+int main()
+{
+    if (NumberOfParam != 2) {
+        printf("usage: %s <flag>\n", *a2);
+        return 1;
+    }
+    
+    // Khởi tạo mảng v34
+    unsigned char v34[16];
+    v6 = 7;
+    v7 = 11;
+    for(int i=0; i<16; ++i) {
+        v10 = byte_2060[v7 % 16] ^ v6 ^ byte_20D0[i];
+        v11 = i;
+        v34[i] = __ROL1__(v10, v11 % 7);
+        v6+=13;
+        v7+=5;
+    }
+ 
+    // Gán s1 bằng một chuỗi các quy trình biến đổi
+    unsigned char s1[80];
+    v13 = 20;
+    v14 = &unk_2080;
+    for(int i=0;i<v13;++i) {
+        s1[i] = v14[i]
+    }
+    sub_15E0(v34, s1, 80);
+    // Khởi tạo mảng v36 --> copy 20 byte đầu của s1 và là URL
+    v17 = s1;
+    v16 = v36;
+    v36[80] = 0;
+    for(int i=0;i<20;++i) {
+        *v16++ = *v17++;
+    }
+
+    if ( (unsigned int)curl_global_init(3, (__int64)v17) )  // Khởi tạo tài nguyên hệ thống cần thiết cho libcurl
+        return 2;
+    v18 = curl_easy_init(); // Khởi tạo một con trỏ quản lý cho phiên làm việc
+    if ( !v18 )
+    {
+        curl_global_cleanup(); // Giải phóng tài nguyên toàn cục
+        return 2;
+    }
+    v32 = EVP_MD_CTX_new(); // Khởi tạo ngữ cảnh cho hàm băm
+    if ( !v32 )
+    {
+        curl_easy_cleanup(v18); // Giải phóng con trỏ quản lý
+        curl_global_cleanup(); // Giải phóng tài nguyên toàn cục
+        return 2;
+    }
+    v19 = EVP_md5(); // Khởi tạo thuật toán hàm băm md5
+    EVP_DigestInit_ex(v32, v19, 0); // Chọn thuật toán md5
+    curl_easy_setopt(v18, 10002, v36); // Thiết lập quy trình gửi request msg đến URL mà v36 biểu diễn
+    curl_easy_setopt(v18, 52, 1); // Vì 1 là bật nên tải dữ liệu từ URL mà v36 biểu diễn
+    curl_easy_setopt(v18, 10018, "M"); // Gán User-Agent(trình duyệt web) là "M"
+    curl_easy_setopt(v18, 20011, sub_15C0); // Đăng ký sub_15C0 là callback function 
+    curl_easy_setopt(v18, 10001, &v32);
+    v30 = curl_easy_perform(v18); // Thực hiên kết nối với server và đợi dữ liệu
+    curl_easy_cleanup(v18); // giải phóng con trỏ quản lý
+    curl_global_cleanup(); // giải phóng tài nguyên
+    if ( v30 ) //if v30 = 0 --> thành công else quá trình gửi hoặc nhận có lỗi 
+    {
+        EVP_MD_CTX_free(v32);
+        puts("NO");
+        return 3;
+    }
+    v31 = 0;
+    EVP_DigestFinal_ex(v32, v33, &v31); // v33 là kết quả hàm băm data nhận từ server có URL được chỉ bởi v36
+    EVP_MD_CTX_free(v32);
+    if ( v31 != 16 ) // len(33) khác 16 --> in ra No.
+    {
+        puts("NO");
+        return 3;
+    }
+    v22 = 7;
+    for (int j = 0; j < 16; ++j )
+    {
+        v24 = v33[(j+7)%16] ^ v33[j] ^ v22 ^ byte_20D0[j];
+        v34[j] = __ROL1__(v24, j % 7);
+        v22 += 31;
+    }
+
+    v27 = s1;
+    v28 = &unk_2020;
+   for(int i=0;i<9;++i)
+    {
+        *v27++ = *v28++;
+    }
+    sub_15E0((__int64)v34, s1, 36);
+    if ( !memcmp(s1, a2[1], 36) )
+        v29 = "OK";
+    else
+        v29 = "NO";
+    puts(v29);
+    return 0;
+}
